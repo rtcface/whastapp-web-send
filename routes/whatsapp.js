@@ -6,12 +6,12 @@ const qrcode = require('qrcode-terminal');
 
 // Inicializar el cliente de WhatsApp
 const client = new Client({
-    webVersionCache: {
-        type: "remote",
-        remotePath:
-            "https://raw.githubusercontent.com/wppconnect-team/wa-version/main/html/2.2412.54.html",
+    puppeteer: {
+        headless: true,
     },
 });
+
+let receivedMessages = []; // Arreglo para almacenar los mensajes recibidos
 
 client.on('qr', qr => {
     qrcode.generate(qr, { small: true });
@@ -19,6 +19,23 @@ client.on('qr', qr => {
 
 client.on('ready', () => {
     console.log('Client is ready!');
+});
+
+client.on('message_create', message => {
+    console.log('Mensaje recibido:', message.body);
+
+    // Guardar los mensajes entrantes
+    receivedMessages.push({
+        id: message.id._serialized,
+        from: message.from,
+        body: message.body,
+        timestamp: message.timestamp,
+    });
+
+    // Ejemplo de respuesta a un comando específico
+    if (message.body === '!ping') {
+        message.reply('pong');
+    }
 });
 
 client.initialize();
@@ -39,6 +56,11 @@ router.post('/send', async (req, res) => {
         console.error('Error al enviar mensaje:', error);
         res.status(500).json({ error: 'Error al enviar mensaje' });
     }
+});
+
+// Endpoint para obtener los mensajes recibidos
+router.get('/messages', (req, res) => {
+    res.json({ messages: receivedMessages });
 });
 
 module.exports = router;

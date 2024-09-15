@@ -18,7 +18,7 @@ Este proyecto es una API para interactuar con WhatsApp utilizando `whatsapp-web.
 
 1. Clona este repositorio:
     ```bash
-    git clone https://github.com/tu-usuario/tu-repositorio.git
+    git clone https://github.com/ramiroec/whatsapp-web-api.git
     ```
 2. Navega al directorio del proyecto:
     ```bash

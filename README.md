@@ -1,20 +1,20 @@
-# WhatsApp Web API
+# 📱 WhatsApp Web API
 
 Este proyecto es una API para interactuar con WhatsApp utilizando `whatsapp-web.js` y `express`. Permite enviar y recibir mensajes a través de WhatsApp.
 
-## Características
+## 🚀 Características
 
-- Generación de código QR para la autenticación de WhatsApp Web.
-- Recepción y almacenamiento de mensajes entrantes.
-- Respuesta automática a comandos específicos.
-- Envío de mensajes a números de WhatsApp.
+- 📷 Generación de código QR para la autenticación de WhatsApp Web.
+- 📥 Recepción y almacenamiento de mensajes entrantes.
+- 🤖 Respuesta automática a comandos específicos.
+- ✉️ Envío de mensajes a números de WhatsApp.
 
-## Requisitos
+## 📋 Requisitos
 
-- Node.js
-- npm
+- 🟢 Node.js
+- 📦 npm
 
-## Instalación
+## 🛠️ Instalación
 
 1. Clona este repositorio:
     ```bash
@@ -29,7 +29,7 @@ Este proyecto es una API para interactuar con WhatsApp utilizando `whatsapp-web.
     npm install
     ```
 
-## Uso
+## 🚀 Uso
 
 1. Inicia el servidor:
     ```bash
@@ -37,7 +37,7 @@ Este proyecto es una API para interactuar con WhatsApp utilizando `whatsapp-web.
     ```
 2. Escanea el código QR que se genera en la terminal con tu aplicación de WhatsApp.
 
-### Endpoints
+### 📡 Endpoints
 
 - **Enviar un mensaje**
     ```http
@@ -51,3 +51,12 @@ Este proyecto es una API para interactuar con WhatsApp utilizando `whatsapp-web.
     ```http
     GET /messages
     ```
+
+## 📜 Licencia
+<p>Este proyecto se encuentra bajo la licencia MIT.</p>
+
+## 👤 Autor
+<p>Ramiro Estigarribia Canese</p>
+
+## 🤝 Contribuciones
+<p>Si deseas contribuir a este proyecto, por favor, crea un pull request con tus cambios.</p>

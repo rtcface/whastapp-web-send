@@ -22,7 +22,7 @@ Este proyecto es una API para interactuar con WhatsApp utilizando `whatsapp-web.
     ```
 2. Navega al directorio del proyecto:
     ```bash
-    cd tu-repositorio
+    cd whatsapp-web-api
     ```
 3. Instala las dependencias:
     ```bash
@@ -33,7 +33,7 @@ Este proyecto es una API para interactuar con WhatsApp utilizando `whatsapp-web.
 
 1. Inicia el servidor:
     ```bash
-    node routes/whatsapp.js
+    node app.js
     ```
 2. Escanea el código QR que se genera en la terminal con tu aplicación de WhatsApp.
 

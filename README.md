@@ -55,8 +55,9 @@ Este proyecto es una API para interactuar con WhatsApp utilizando `whatsapp-web.
 ## 📜 Licencia
 <p>Este proyecto se encuentra bajo la licencia MIT.</p>
 
-## 👤 Autor
-<p>Ramiro Estigarribia Canese</p>
 
 ## 🤝 Contribuciones
 <p>Si deseas contribuir a este proyecto, por favor, crea un pull request con tus cambios.</p>
+
+## 🌟 Créditos
+Proyecto desarrollado con ❤️ por [Ramiro Estigarribia Canese](https://github.com/ramiroec).

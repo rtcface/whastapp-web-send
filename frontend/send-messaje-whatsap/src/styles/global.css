@@ -1,0 +1,31 @@
+@import "tailwindcss";
+
+/* TailwindCSS v4 Theme Configuration */
+@theme {
+  --color-whatsapp-green: #25D366;
+  --color-whatsapp-dark: #128C7E;
+  --color-whatsapp-light: #DCF8C6;
+}
+
+/* Custom styles */
+@layer components {
+  .btn-primary {
+    @apply bg-whatsapp-green hover:bg-whatsapp-dark text-white font-semibold py-3 px-6 rounded-lg transition-all duration-200 transform hover:scale-105 shadow-lg;
+  }
+  
+  .btn-secondary {
+    @apply bg-gray-600 hover:bg-gray-700 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-200 transform hover:scale-105 shadow-lg;
+  }
+  
+  .card {
+    @apply bg-white rounded-xl shadow-lg p-8;
+  }
+  
+  .input-field {
+    @apply w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-whatsapp-green focus:border-transparent transition-all duration-200;
+  }
+  
+  .nav-item {
+    @apply flex items-center space-x-2 px-4 py-2 rounded-lg transition-all duration-200 hover:bg-whatsapp-light hover:text-whatsapp-dark;
+  }
+}

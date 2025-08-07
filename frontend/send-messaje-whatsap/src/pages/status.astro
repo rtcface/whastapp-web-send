@@ -1,0 +1,188 @@
+---
+import Header from "../components/Header.astro";
+import Navigation from "../components/Navigation.astro";
+import Footer from "../components/Footer.astro";
+---
+
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width" />
+    <meta name="generator" content={Astro.generator} />
+    <title>Estado del Servidor - Sesaet WhatsApp</title>
+    <link rel="stylesheet" href="/src/styles/global.css" />
+  </head>
+  <body class="bg-gray-50 min-h-screen flex flex-col">
+    <Header />
+    <Navigation />
+
+    <main class="flex-1 container mx-auto px-4 py-8">
+      <div class="max-w-2xl mx-auto">
+        <div class="card">
+          <div class="flex items-center space-x-3 mb-6">
+            <div class="bg-whatsapp-green rounded-full p-3">
+              <svg
+                class="w-6 h-6 text-white"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+              </svg>
+            </div>
+            <h2 class="text-2xl font-bold text-gray-800">
+              Estado del Servidor
+            </h2>
+          </div>
+
+          <div class="space-y-6">
+            <div
+              class="flex items-center justify-between p-4 bg-gray-50 rounded-lg"
+            >
+              <div class="flex items-center space-x-3">
+                <div
+                  id="serverStatusIndicator"
+                  class="w-4 h-4 rounded-full bg-yellow-400 animate-pulse"
+                >
+                </div>
+                <span class="font-medium">Estado del Cliente WhatsApp</span>
+              </div>
+              <span id="serverStatusText" class="text-sm text-gray-600"
+                >Verificando...</span
+              >
+            </div>
+
+            <button onclick="checkServerStatus()" class="btn-secondary w-full">
+              <svg
+                class="w-5 h-5 mr-2 inline"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                ></path>
+              </svg>
+              Verificar Estado
+            </button>
+
+            <div id="statusDetails" class="hidden">
+              <h3 class="text-lg font-semibold text-gray-800 mb-3">
+                Detalles del Sistema
+              </h3>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="bg-gray-50 p-4 rounded-lg">
+                  <h4 class="font-medium text-gray-700">API Endpoints</h4>
+                  <p class="text-sm text-gray-600 mt-1">
+                    Todos los endpoints funcionando correctamente
+                  </p>
+                </div>
+                <div class="bg-gray-50 p-4 rounded-lg">
+                  <h4 class="font-medium text-gray-700">Conexión</h4>
+                  <p class="text-sm text-gray-600 mt-1">
+                    Conexión estable con WhatsApp Web
+                  </p>
+                </div>
+                <div class="bg-gray-50 p-4 rounded-lg">
+                  <h4 class="font-medium text-gray-700">Autenticación</h4>
+                  <p class="text-sm text-gray-600 mt-1">
+                    Cliente autenticado y listo
+                  </p>
+                </div>
+                <div class="bg-gray-50 p-4 rounded-lg">
+                  <h4 class="font-medium text-gray-700">Sesión</h4>
+                  <p class="text-sm text-gray-600 mt-1">
+                    Sesión persistente activa
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <h4 class="font-medium text-blue-800 mb-2">
+                Información del Sistema
+              </h4>
+              <ul class="text-sm text-blue-700 space-y-1">
+                <li>• Servidor: Node.js con Express</li>
+                <li>• WhatsApp: whatsapp-web.js</li>
+                <li>• Frontend: Astro con Tailwind CSS</li>
+                <li>• Autenticación: LocalAuth con persistencia</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <Footer />
+
+    <script>
+      // API Base URL
+      const API_BASE_URL = "http://localhost:3000/api/whatsapp";
+
+      // Check server status
+      async function checkServerStatus() {
+        try {
+          const response = await fetch(`${API_BASE_URL}/status`);
+          const data = await response.json();
+
+          const indicator = document.getElementById("serverStatusIndicator");
+          const statusText = document.getElementById("serverStatusText");
+          const statusDetails = document.getElementById("statusDetails");
+
+          if (data.isReady) {
+            indicator.className = "w-4 h-4 rounded-full bg-green-500";
+            statusText.textContent = "Conectado";
+            statusText.className = "text-sm text-green-600 font-medium";
+            statusDetails.classList.remove("hidden");
+          } else {
+            indicator.className = "w-4 h-4 rounded-full bg-red-500";
+            statusText.textContent = "Desconectado";
+            statusText.className = "text-sm text-red-600 font-medium";
+            statusDetails.classList.add("hidden");
+          }
+
+          // Update header status
+          updateHeaderStatus(data.isReady);
+        } catch (error) {
+          console.error("Error checking status:", error);
+          const indicator = document.getElementById("serverStatusIndicator");
+          const statusText = document.getElementById("serverStatusText");
+
+          indicator.className = "w-4 h-4 rounded-full bg-red-500";
+          statusText.textContent = "Error de conexión";
+          statusText.className = "text-sm text-red-600 font-medium";
+        }
+      }
+
+      // Update header status
+      function updateHeaderStatus(isReady) {
+        const headerIndicator = document.getElementById("status-indicator");
+        const headerText = document.getElementById("status-text");
+
+        if (isReady) {
+          headerIndicator.className = "w-3 h-3 rounded-full bg-green-400";
+          headerText.textContent = "Conectado";
+        } else {
+          headerIndicator.className = "w-3 h-3 rounded-full bg-red-400";
+          headerText.textContent = "Desconectado";
+        }
+      }
+
+      // Initialize
+      document.addEventListener("DOMContentLoaded", function () {
+        checkServerStatus();
+        setInterval(checkServerStatus, 30000);
+      });
+    </script>
+  </body>
+</html>
+

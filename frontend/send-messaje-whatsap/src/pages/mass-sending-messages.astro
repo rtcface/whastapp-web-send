@@ -1,0 +1,314 @@
+---
+import Header from "../components/Header.astro";
+import Navigation from "../components/Navigation.astro";
+import Footer from "../components/Footer.astro";
+---
+
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width" />
+    <meta name="generator" content={Astro.generator} />
+    <title>Enviar Mensaje con Imagen - Sesaet WhatsApp</title>
+    <link rel="stylesheet" href="/src/styles/global.css" />
+  </head>
+  <body class="bg-gray-50 min-h-screen flex flex-col">
+    <Header />
+    <Navigation />
+
+    <main class="flex-1 container mx-auto px-4 py-8">
+      <div class="max-w-2xl mx-auto">
+        <div class="card">
+          <div class="flex items-center space-x-3 mb-6">
+            <div class="bg-whatsapp-green rounded-full p-3">
+              <svg
+                class="w-6 h-6 text-white"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                ></path>
+              </svg>
+            </div>
+            <h2 class="text-2xl font-bold text-gray-800">
+              Enviar Mensajes de forma masiva con Imagen
+            </h2>
+          </div>
+
+          <form id="excelUploadForm" class="space-y-6">
+            <div>
+              <label class="block font-medium mb-2" for="excelFile">
+                Selecciona archivo Excel (.xlsx)
+              </label>
+              <input
+                type="file"
+                id="excelFile"
+                accept=".xlsx, .xls"
+                class="block w-full border rounded px-3 py-2"
+                required
+              />
+            </div>
+            <button
+              type="button"
+              id="loadExcelBtn"
+              class="btn-secondary w-full"
+            >
+              Cargar
+            </button>
+            <div id="excelPreview" class="mt-4"></div>
+            <button
+              type="submit"
+              id="sendMassiveBtn"
+              class="btn-primary w-full"
+              disabled
+            >
+              <svg
+                class="w-5 h-5 mr-2 inline"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                ></path>
+              </svg>
+              Enviar todos los mensajes
+            </button>
+          </form>
+          <div id="sendImageResult" class="mt-6 hidden"></div>
+        </div>
+      </div>
+    </main>
+
+    <Footer />
+
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"
+    ></script>
+    <script>
+      // API Base URL
+      const API_BASE_URL = "http://localhost:3000/api/whatsapp";
+
+      // Show result message
+      function showResult(element, message, type) {
+        element.className = `p-4 rounded-lg ${type === "success" ? "bg-green-100 text-green-800 border border-green-200" : "bg-red-100 text-red-800 border border-red-200"}`;
+        element.innerHTML = `
+					<div class="flex items-center">
+						<svg class="w-5 h-5 mr-2 ${type === "success" ? "text-green-600" : "text-red-600"}" fill="currentColor" viewBox="0 0 20 20">
+							${
+                type === "success"
+                  ? '<path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>'
+                  : '<path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>'
+              }
+						</svg>
+						${message}
+					</div>
+				`;
+        element.classList.remove("hidden");
+
+        setTimeout(() => {
+          element.classList.add("hidden");
+        }, 5000);
+      }
+
+      // Check server status on load
+      async function checkServerStatus() {
+        try {
+          const response = await fetch(`${API_BASE_URL}/status`);
+          const data = await response.json();
+
+          const headerIndicator = document.getElementById("status-indicator");
+          const headerText = document.getElementById("status-text");
+
+          if (data.isReady) {
+            headerIndicator.className = "w-3 h-3 rounded-full bg-green-400";
+            headerText.textContent = "Conectado";
+          } else {
+            headerIndicator.className = "w-3 h-3 rounded-full bg-red-400";
+            headerText.textContent = "Desconectado";
+          }
+        } catch (error) {
+          const headerIndicator = document.getElementById("status-indicator");
+          const headerText = document.getElementById("status-text");
+          headerIndicator.className = "w-3 h-3 rounded-full bg-red-400";
+          headerText.textContent = "Error de conexión";
+        }
+      }
+
+      // Inicializar todo cuando el DOM esté listo
+      document.addEventListener("DOMContentLoaded", function () {
+        checkServerStatus();
+        setInterval(checkServerStatus, 30000);
+
+        let excelData = [];
+
+        document
+          .getElementById("loadExcelBtn")
+          .addEventListener("click", function () {
+            const fileInput = document.getElementById("excelFile");
+            const previewDiv = document.getElementById("excelPreview");
+            const sendBtn = document.getElementById("sendMassiveBtn");
+            previewDiv.innerHTML = "";
+            sendBtn.disabled = true;
+            excelData = [];
+
+            if (!fileInput.files.length) {
+              previewDiv.innerHTML =
+                '<div class="text-red-600">Selecciona un archivo.</div>';
+              return;
+            }
+
+            const file = fileInput.files[0];
+            const reader = new FileReader();
+            reader.onload = function (e) {
+              const data = new Uint8Array(e.target.result);
+              const workbook = XLSX.read(data, { type: "array" });
+              const sheetName = workbook.SheetNames[0];
+              const worksheet = workbook.Sheets[sheetName];
+              const json = XLSX.utils.sheet_to_json(worksheet, { defval: "" });
+
+              if (!json.length) {
+                previewDiv.innerHTML =
+                  '<div class="text-red-600">El archivo está vacío o no tiene datos válidos.</div>';
+                return;
+              }
+
+              excelData = json;
+              sendBtn.disabled = false;
+
+              // Mostrar tabla de preview
+              let table = `<div class="overflow-x-auto"><table class="min-w-full border text-xs"><thead><tr>`;
+              const headers = [
+                "Id",
+                "Nombre_Completo",
+                "Puesto",
+                "Ente Publico",
+                "Telefono",
+                "Mensaje",
+              ];
+              headers.forEach((h) => {
+                table += `<th class="border px-2 py-1 bg-gray-100">${h}</th>`;
+              });
+              table += `</tr></thead><tbody>`;
+              excelData.forEach((row) => {
+                table += "<tr>";
+                headers.forEach((h) => {
+                  table += `<td class="border px-2 py-1">${row[h] || ""}</td>`;
+                });
+                table += "</tr>";
+              });
+              table += "</tbody></table></div>";
+              previewDiv.innerHTML = table;
+            };
+            reader.readAsArrayBuffer(file);
+          });
+
+        document
+          .getElementById("excelUploadForm")
+          .addEventListener("submit", async function (e) {
+            e.preventDefault();
+            const resultDiv = document.getElementById("sendImageResult");
+            if (!excelData.length) {
+              showResult(
+                resultDiv,
+                "Primero carga un archivo válido.",
+                "error"
+              );
+              return;
+            }
+
+            // Mostrar mensaje de inicio
+            resultDiv.className =
+              "p-4 rounded-lg bg-blue-100 text-blue-800 border border-blue-200";
+            resultDiv.innerHTML = `<div class="flex items-center">
+              <svg class="w-5 h-5 mr-2 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-13a1 1 0 10-2 0v4a1 1 0 002 0V5zm-1 8a1 1 0 100 2 1 1 0 000-2z" clip-rule="evenodd"/>
+              </svg>
+              Enviando mensajes, por favor espera...
+            </div>`;
+            resultDiv.classList.remove("hidden");
+
+            let enviados = 0;
+            let errores = 0;
+
+            for (let i = 0; i < excelData.length; i++) {
+              const row = excelData[i];
+              // Construir imageUrl
+              const qrParams = [
+                row["Id"] || "",
+                row["Nombre_Completo"] || "",
+                row["Puesto"] || "",
+                row["Ente Publico"] || row["Ente_Publico"] || "",
+              ].join("-");
+              const imageUrl = `https://image-charts.com/chart?chs=550x550&cht=qr&choe=UTF-8&chl=${encodeURIComponent(qrParams)}`;
+
+              // Construir JSON
+              const payload = {
+                numeroDestino: "521" + String(row["Telefono"] || ""),
+                mensaje: String(
+                  row["Mensaje"] || "¡Este es tu qr de acceso al evento!"
+                ),
+                imageUrl,
+              };
+
+              // Mostrar progreso
+              resultDiv.innerHTML = `<div class="flex items-center">
+                <svg class="w-5 h-5 mr-2 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-13a1 1 0 10-2 0v4a1 1 0 002 0V5zm-1 8a1 1 0 100 2 1 1 0 000-2z" clip-rule="evenodd"/>
+                </svg>
+                Enviando mensaje ${i + 1} de ${excelData.length}...<br>
+                Enviados: ${enviados} | Errores: ${errores}
+              </div>`;
+
+              try {
+                const response = await fetch(
+                  `${API_BASE_URL}/send-with-image`,
+                  {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(payload),
+                  }
+                );
+                if (response.ok) {
+                  enviados++;
+                  // Esperar 1 segundo solo si fue exitoso
+                  await new Promise((res) => setTimeout(res, 1000));
+                } else {
+                  errores++;
+                }
+              } catch (err) {
+                errores++;
+              }
+            }
+
+            // Mostrar resultado final
+            if (errores === 0) {
+              showResult(
+                resultDiv,
+                `Todos los mensajes (${enviados}) fueron enviados exitosamente.`,
+                "success"
+              );
+            } else {
+              showResult(
+                resultDiv,
+                `Mensajes enviados: ${enviados}. Errores: ${errores}.`,
+                errores ? "error" : "success"
+              );
+            }
+            document.getElementById("excelUploadForm").reset();
+            document.getElementById("excelPreview").innerHTML = "";
+            document.getElementById("sendMassiveBtn").disabled = true;
+            excelData = [];
+          });
+      });
+    </script>
+  </body>
+</html>

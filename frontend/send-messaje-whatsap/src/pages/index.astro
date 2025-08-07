@@ -1,0 +1,207 @@
+---
+import Header from "../components/Header.astro";
+import Navigation from "../components/Navigation.astro";
+import Footer from "../components/Footer.astro";
+---
+
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width" />
+    <meta name="generator" content={Astro.generator} />
+    <title>Envío de WhatsApp Sesaet</title>
+    <link rel="stylesheet" href="/src/styles/global.css" />
+  </head>
+  <body class="bg-gray-50 min-h-screen flex flex-col">
+    <Header />
+    <Navigation />
+
+    <main class="flex-1 container mx-auto px-4 py-8">
+      <div class="max-w-2xl mx-auto">
+        <div class="card">
+          <div class="flex items-center space-x-3 mb-6">
+            <div class="bg-whatsapp-green rounded-full p-3">
+              <svg
+                class="w-6 h-6 text-white"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
+              </svg>
+            </div>
+            <h2 class="text-2xl font-bold text-gray-800">
+              Enviar Mensaje de Texto
+            </h2>
+          </div>
+
+          <form id="sendMessageForm" class="space-y-6">
+            <div>
+              <label
+                for="phoneNumber"
+                class="block text-sm font-medium text-gray-700 mb-2"
+                >Número de Destino</label
+              >
+              <input
+                type="text"
+                id="phoneNumber"
+                name="phoneNumber"
+                placeholder="1234567890"
+                class="input-field"
+                required
+              />
+              <p class="text-sm text-gray-500 mt-1">
+                Ingresa el número sin el código de país (ej: 1234567890)
+              </p>
+            </div>
+
+            <div>
+              <label
+                for="messageText"
+                class="block text-sm font-medium text-gray-700 mb-2"
+                >Mensaje</label
+              >
+              <textarea
+                id="messageText"
+                name="messageText"
+                rows="4"
+                placeholder="Escribe tu mensaje aquí..."
+                class="input-field resize-none"
+                required></textarea>
+            </div>
+
+            <button type="submit" class="btn-primary w-full">
+              <svg
+                class="w-5 h-5 mr-2 inline"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
+              </svg>
+              Enviar Mensaje
+            </button>
+          </form>
+
+          <div id="sendMessageResult" class="mt-6 hidden"></div>
+        </div>
+      </div>
+    </main>
+
+    <Footer />
+
+    <script>
+      // API Base URL
+      const API_BASE_URL = "http://localhost:3000/api/whatsapp";
+
+      // Send message form
+      document
+        .getElementById("sendMessageForm")
+        .addEventListener("submit", async (e) => {
+          e.preventDefault();
+
+          const phoneNumber = document.getElementById("phoneNumber").value;
+          const message = document.getElementById("messageText").value;
+          const resultDiv = document.getElementById("sendMessageResult");
+
+          if (!phoneNumber || !message) {
+            showResult(
+              resultDiv,
+              "Por favor, completa todos los campos.",
+              "error"
+            );
+            return;
+          }
+
+          try {
+            const response = await fetch(`${API_BASE_URL}/send`, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                numeroDestino: phoneNumber,
+                mensaje: message,
+              }),
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+              showResult(resultDiv, "Mensaje enviado exitosamente!", "success");
+              document.getElementById("sendMessageForm").reset();
+            } else {
+              showResult(resultDiv, `Error: ${data.error}`, "error");
+            }
+          } catch (error) {
+            showResult(
+              resultDiv,
+              "Error de conexión. Verifica que el servidor esté ejecutándose.",
+              "error"
+            );
+          }
+        });
+
+      // Show result message
+      function showResult(element, message, type) {
+        element.className = `p-4 rounded-lg ${type === "success" ? "bg-green-100 text-green-800 border border-green-200" : "bg-red-100 text-red-800 border border-red-200"}`;
+        element.innerHTML = `
+					<div class="flex items-center">
+						<svg class="w-5 h-5 mr-2 ${type === "success" ? "text-green-600" : "text-red-600"}" fill="currentColor" viewBox="0 0 20 20">
+							${
+                type === "success"
+                  ? '<path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>'
+                  : '<path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>'
+              }
+						</svg>
+						${message}
+					</div>
+				`;
+        element.classList.remove("hidden");
+
+        setTimeout(() => {
+          element.classList.add("hidden");
+        }, 5000);
+      }
+
+      // Check server status on load
+      async function checkServerStatus() {
+        try {
+          const response = await fetch(`${API_BASE_URL}/status`);
+          const data = await response.json();
+
+          const headerIndicator = document.getElementById("status-indicator");
+          const headerText = document.getElementById("status-text");
+
+          if (data.isReady) {
+            headerIndicator.className = "w-3 h-3 rounded-full bg-green-400";
+            headerText.textContent = "Conectado";
+          } else {
+            headerIndicator.className = "w-3 h-3 rounded-full bg-red-400";
+            headerText.textContent = "Desconectado";
+          }
+        } catch (error) {
+          const headerIndicator = document.getElementById("status-indicator");
+          const headerText = document.getElementById("status-text");
+          headerIndicator.className = "w-3 h-3 rounded-full bg-red-400";
+          headerText.textContent = "Error de conexión";
+        }
+      }
+
+      // Initialize
+      document.addEventListener("DOMContentLoaded", function () {
+        checkServerStatus();
+        setInterval(checkServerStatus, 30000);
+      });
+    </script>
+  </body>
+</html>

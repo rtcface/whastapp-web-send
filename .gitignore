@@ -11,6 +11,9 @@
 # production
 /build
 /dist
+/frontend/send-messaje-whatsap/dist
+/frontend/send-messaje-whatsap/node_modules
+
 
 # misc
 .DS_Store

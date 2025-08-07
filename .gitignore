@@ -5,6 +5,7 @@
 /.pnp
 .pnp.js
 .wwebjs_cache
+.wwebjs_auth
 # testing
 /coverage
 
@@ -13,6 +14,7 @@
 /dist
 /frontend/send-messaje-whatsap/dist
 /frontend/send-messaje-whatsap/node_modules
+/frontend/send-messaje-whatsap/.astro
 
 
 # misc

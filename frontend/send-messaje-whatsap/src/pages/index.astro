@@ -51,12 +51,12 @@ import Footer from "../components/Footer.astro";
                 type="text"
                 id="phoneNumber"
                 name="phoneNumber"
-                placeholder="1234567890"
+                placeholder="521234567890 o +52 1234567890"
                 class="input-field"
                 required
               />
               <p class="text-sm text-gray-500 mt-1">
-                Ingresa el número sin el código de país (ej: 1234567890)
+                Ingresa el número con código de país (ej: 521234567890 o +52 1234567890). El número debe estar registrado en WhatsApp.
               </p>
             </div>
 
@@ -123,13 +123,24 @@ import Footer from "../components/Footer.astro";
           }
 
           try {
+            // Validar formato básico del número
+            const phoneRegex = /^[\d\+\s\-\(\)]+$/;
+            if (!phoneRegex.test(phoneNumber)) {
+              showResult(
+                resultDiv,
+                "El número de teléfono contiene caracteres inválidos. Solo se permiten números, espacios, guiones, paréntesis y el símbolo +.",
+                "error"
+              );
+              return;
+            }
+
             const response = await fetch(`${API_BASE_URL}/send`, {
               method: "POST",
               headers: {
                 "Content-Type": "application/json",
               },
               body: JSON.stringify({
-                numeroDestino: phoneNumber,
+                numeroDestino: phoneNumber.trim(),
                 mensaje: message,
               }),
             });
@@ -140,7 +151,12 @@ import Footer from "../components/Footer.astro";
               showResult(resultDiv, "Mensaje enviado exitosamente!", "success");
               document.getElementById("sendMessageForm").reset();
             } else {
-              showResult(resultDiv, `Error: ${data.error}`, "error");
+              // Mostrar error más descriptivo
+              let errorMsg = data.error || "Error desconocido";
+              if (data.details && data.details.includes("LID")) {
+                errorMsg += " Asegúrate de que el número esté registrado en WhatsApp e incluye el código de país.";
+              }
+              showResult(resultDiv, `Error: ${errorMsg}`, "error");
             }
           } catch (error) {
             showResult(

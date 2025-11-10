@@ -10,7 +10,10 @@ import Footer from "../components/Footer.astro";
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width" />
     <meta name="generator" content={Astro.generator} />
-    <title>Envia Qr de acceso a evento de forma masiva - Sesaet WhatsApp</title>
+    <title>
+      Enviar Mensaje de Texto de forma masiva y adjunta una imagene - Sesaet
+      WhatsApp
+    </title>
     <link rel="stylesheet" href="/src/styles/global.css" />
   </head>
   <body class="bg-gray-50 min-h-screen flex flex-col">
@@ -37,7 +40,7 @@ import Footer from "../components/Footer.astro";
               </svg>
             </div>
             <h2 class="text-2xl font-bold text-gray-800">
-              Envia Qr de acceso a evento de forma masiva
+              Envia Mensaje de Texto de forma masiva y adjunta una imagene
             </h2>
           </div>
 
@@ -47,26 +50,6 @@ import Footer from "../components/Footer.astro";
                 <label class="block font-medium" for="excelFile">
                   Selecciona archivo Excel (.xlsx)
                 </label>
-                <button
-                  type="button"
-                  id="downloadTemplateBtn"
-                  class="text-sm text-blue-600 hover:text-blue-800 underline flex items-center"
-                >
-                  <svg
-                    class="w-4 h-4 mr-1"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
-                    ></path>
-                  </svg>
-                  Descargar Template
-                </button>
               </div>
               <input
                 type="file"
@@ -76,8 +59,8 @@ import Footer from "../components/Footer.astro";
                 required
               />
               <p class="text-sm text-gray-500 mt-1">
-                El archivo debe contener las columnas: Id, Nombre_Completo,
-                Puesto, Ente Publico, Telefono, Mensaje
+                El archivo debe contener las columnas: Mensaje, URL_Imagen,
+                Telefono
               </p>
             </div>
             <button
@@ -169,44 +152,10 @@ import Footer from "../components/Footer.astro";
         }
       }
 
-      // Función para descargar template Excel
-      async function downloadTemplate() {
-        try {
-          const response = await fetch(`${API_BASE_URL}/template-excel`);
-          if (!response.ok) {
-            throw new Error("Error al descargar template");
-          }
-
-          // Obtener el blob del archivo
-          const blob = await response.blob();
-
-          // Crear URL temporal y descargar
-          const url = window.URL.createObjectURL(blob);
-          const a = document.createElement("a");
-          a.href = url;
-          a.download = "template_mensajes_masivos.xlsx";
-          document.body.appendChild(a);
-          a.click();
-          document.body.removeChild(a);
-          window.URL.revokeObjectURL(url);
-        } catch (error) {
-          console.error("Error al descargar template:", error);
-          alert("Error al descargar el template. Por favor, intenta de nuevo.");
-        }
-      }
-
       // Inicializar todo cuando el DOM esté listo
       document.addEventListener("DOMContentLoaded", function () {
         checkServerStatus();
         setInterval(checkServerStatus, 30000);
-
-        // Agregar evento al botón de descargar template
-        const downloadTemplateBtn = document.getElementById(
-          "downloadTemplateBtn"
-        );
-        if (downloadTemplateBtn) {
-          downloadTemplateBtn.addEventListener("click", downloadTemplate);
-        }
 
         let excelData = [];
 
@@ -246,14 +195,7 @@ import Footer from "../components/Footer.astro";
 
               // Mostrar tabla de preview
               let table = `<div class="overflow-x-auto"><table class="min-w-full border text-xs"><thead><tr>`;
-              const headers = [
-                "Id",
-                "Nombre_Completo",
-                "Puesto",
-                "Ente Publico",
-                "Telefono",
-                "Mensaje",
-              ];
+              const headers = ["Mensaje", "URL_Imagen", "Telefono"];
               headers.forEach((h) => {
                 table += `<th class="border px-2 py-1 bg-gray-100">${h}</th>`;
               });
@@ -302,13 +244,7 @@ import Footer from "../components/Footer.astro";
             for (let i = 0; i < excelData.length; i++) {
               const row = excelData[i];
               // Construir imageUrl
-              const qrParams = [
-                row["Id"] || "",
-                row["Nombre_Completo"] || "",
-                row["Puesto"] || "",
-                row["Ente Publico"] || row["Ente_Publico"] || "",
-              ].join("-");
-              const imageUrl = `https://image-charts.com/chart?chs=550x550&cht=qr&choe=UTF-8&chl=${encodeURIComponent(qrParams)}`;
+              const imageUrl = String(row["URL_Imagen"] || "").trim();
 
               // Normalizar número de teléfono
               let phoneNumber = String(row["Telefono"] || "").trim();
@@ -333,7 +269,7 @@ import Footer from "../components/Footer.astro";
               const payload = {
                 numeroDestino: phoneNumber,
                 mensaje: String(
-                  row["Mensaje"] || "¡Este es tu qr de acceso al evento!"
+                  row["Mensaje"] || "¡Hola! Te adjunto la imagen."
                 ),
                 imageUrl,
               };
